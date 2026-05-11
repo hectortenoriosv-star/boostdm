@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  html { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { background-color: #070D1F; color: #E2E8F4; margin: 0; padding: 0; min-height: 100vh; }
+  #root { display: flex; min-height: 100vh; }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #0C1326; }
+  ::-webkit-scrollbar-thumb { background: #1D2D47; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #243554; }
+}
+
+@layer components {
+  .card { @apply bg-navy-700 border border-navy-500 rounded-2xl; }
+  .card-sm { @apply bg-navy-700 border border-navy-500 rounded-xl; }
+  .card-elevated { @apply bg-navy-600 border border-navy-500 rounded-2xl; }
+
+  .btn-primary { @apply bg-accent-orange hover:bg-accent-orange-light text-white font-semibold px-4 py-2 rounded-xl transition-all duration-150 text-sm flex items-center gap-2; }
+  .btn-secondary { @apply bg-navy-600 hover:bg-navy-500 border border-navy-500 text-ink-primary font-medium px-4 py-2 rounded-xl transition-all duration-150 text-sm flex items-center gap-2; }
+  .btn-ghost { @apply hover:bg-navy-600 text-ink-secondary hover:text-ink-primary font-medium px-3 py-1.5 rounded-lg transition-all duration-150 text-sm flex items-center gap-2; }
+  .btn-blue { @apply bg-accent-blue hover:bg-accent-blue-light text-white font-semibold px-4 py-2 rounded-xl transition-all duration-150 text-sm flex items-center gap-2; }
+
+  .badge-green { @apply bg-signal-green/10 text-signal-green border border-signal-green/20 text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1; }
+  .badge-amber { @apply bg-signal-amber/10 text-signal-amber border border-signal-amber/20 text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1; }
+  .badge-red { @apply bg-signal-red/10 text-signal-red border border-signal-red/20 text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1; }
+  .badge-blue { @apply bg-accent-blue/10 text-accent-blue-light border border-accent-blue/20 text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1; }
+  .badge-orange { @apply bg-accent-orange/10 text-accent-orange-light border border-accent-orange/20 text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1; }
+  .badge-neutral { @apply bg-navy-500 text-ink-secondary text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1; }
+  .badge-purple { @apply bg-signal-purple/10 text-signal-purple border border-signal-purple/20 text-xs font-semibold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1; }
+
+  .nav-item { @apply flex items-center gap-3 px-3 py-2 rounded-xl text-ink-muted hover:text-ink-primary hover:bg-navy-600 transition-all duration-150 text-sm font-medium cursor-pointer w-full; }
+  .nav-item-active { @apply flex items-center gap-3 px-3 py-2 rounded-xl text-white bg-accent-blue/15 border border-accent-blue/25 text-sm font-semibold cursor-pointer w-full; }
+
+  .section-label { @apply text-xs font-bold uppercase tracking-widest text-ink-faint px-3 mb-1; }
+  .metric-value { @apply text-3xl font-bold text-ink-primary tabular-nums; }
+  .metric-label { @apply text-xs font-semibold uppercase tracking-wider text-ink-secondary; }
+
+  .progress-rail { @apply w-full h-1.5 bg-navy-500 rounded-full overflow-hidden; }
+
+  .page-container { @apply flex-1 overflow-y-auto; }
+  .page-content { @apply p-6 space-y-6 max-w-screen-2xl; }
+
+  .empty-state { @apply flex flex-col items-center justify-center text-center py-16 px-6; }
+  .skeleton { @apply bg-navy-600 rounded-lg animate-pulse; }
+
+  .seg-btn { @apply px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer; }
+  .seg-btn-active { @apply bg-navy-500 text-ink-primary; }
+  .seg-btn-inactive { @apply text-ink-muted hover:text-ink-secondary; }
+
+  .input-base { @apply bg-navy-600 border border-navy-500 rounded-xl px-3 py-2 text-sm text-ink-primary placeholder-ink-muted focus:outline-none focus:border-accent-blue/50 transition-colors; }
+
+  .divider { @apply border-t border-navy-500; }
+}
+
+@layer utilities {
+  .text-gradient-orange {
+    background: linear-gradient(135deg, #FF5722, #FF8A65);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .text-gradient-blue {
+    background: linear-gradient(135deg, #2563EB, #60A5FA);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .glow-dot-green { box-shadow: 0 0 6px #22C55E; }
+  .glow-dot-amber { box-shadow: 0 0 6px #F59E0B; }
+  .glow-dot-red { box-shadow: 0 0 6px #EF4444; }
+  .glow-dot-blue { box-shadow: 0 0 6px #2563EB; }
+}
