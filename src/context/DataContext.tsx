@@ -12,6 +12,8 @@ import {
   SEED_COACHING_NOTES, SEED_EOD_REPORTS, SEED_MESSAGE_DRAFTS, SEED_DISTRICT_SETTINGS,
 } from '../data/seed';
 import {
+import { runLiveSync } from '../services/liveDataSync';
+
   buildRepSummary, buildStoreSummary, calcDistrictMTD, calcVisitStats,
   CURRENT_MONTH, CURRENT_YEAR,
 } from '../data/calculations';
@@ -244,6 +246,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch { /* ignore */ }
   }, [state]);
+  // Live sync from Google Sheets on mount — replaces seed/demo data
+  useEffect(() => {
+    runLiveSync().then(result => {
+      if (!result || result.error) return; // no API key or error — keep seed data
+      setState(s => ({
+        ...s,
+        stores:           result.stores.length          > 0 ? result.stores          : s.stores,
+        reps:             result.reps.length            > 0 ? result.reps            : s.reps,
+        monthlyRepPerf:   result.monthlyRepPerf.length  > 0 ? result.monthlyRepPerf  : s.monthlyRepPerf,
+        monthlyStorePerf: result.monthlyStorePerf.length > 0 ? result.monthlyStorePerf : s.monthlyStorePerf,
+        dailyPerf:        result.dailyPerf.length       > 0 ? result.dailyPerf       : s.dailyPerf,
+      }));
+      console.log('[DataContext] Live sync applied at', result.syncedAt);
+    });
+  }, []); // run once on mount
+
 
   const patch = useCallback(<K extends keyof AppState>(key: K, updater: (prev: AppState[K]) => AppState[K]) => {
     setState(s => ({ ...s, [key]: updater(s[key]) }));
