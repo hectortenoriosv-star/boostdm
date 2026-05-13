@@ -206,6 +206,8 @@ interface DataContextValue {
   clearMonthVisits: (month: number, year: number) => void;
 
   // Google Calendar & Tasks sync results
+  calendarEvents: CalendarEvent[];
+  googleTasks: GoogleTask[];
   setCalendarEvents: (events: CalendarEvent[]) => void;
   setGoogleTasks: (tasks: GoogleTask[]) => void;
 
