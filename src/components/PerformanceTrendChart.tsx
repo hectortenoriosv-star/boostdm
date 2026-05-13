@@ -5,7 +5,7 @@ import {
 import type { ChartDayData } from '../types';
 import { fmtCurrency, fmtDate } from '../data/calculations';
 
-const BOXES_COLOR = '#60a5fa';
+const BOXES_COLOR = '#22d3ee';
 
 interface PerformanceTrendChartProps {
   data: ChartDayData[];

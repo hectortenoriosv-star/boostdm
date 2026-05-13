@@ -109,7 +109,7 @@ export interface Task {
   repId?: string;
   storeId?: string;
   notes: string;
-  source?: 'manual' | 'eod-form' | 'visit' | 'sheets' | 'system';
+  source?: 'manual' | 'eod-form' | 'visit' | 'sheets' | 'system' | 'seed';
   createdAt: string;
   completedAt?: string;
 }
@@ -218,6 +218,7 @@ export interface CoachingNote {
   followUpDue?: string;
   status: 'open' | 'closed';
   eodReportId?: string;
+  source?: 'manual' | 'seed';
   createdAt: string;
 }
 
@@ -389,6 +390,7 @@ export interface PlanVisitPrefill {
   reason?: string;
   focusArea?: string;
   repId?: string;
+  repIds?: string[];
   relatedTaskId?: string;
   calendarEventId?: string;
   notes?: string;

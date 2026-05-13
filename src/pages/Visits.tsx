@@ -4,6 +4,7 @@ import {
   MapPin, Plus, CheckCircle, AlertTriangle,
   TrendingUp, TrendingDown, Calendar, ChevronRight, X, Store,
   Clock, Flag, ClipboardList, Edit3, Trash2, RotateCcw,
+  ChevronDown, Check,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { daysSince, fmtPct } from '../data/calculations';
@@ -25,6 +26,57 @@ const TYPE_COLORS: Record<VisitType, string> = {
   'Coaching Visit': 'text-purple-400',
 };
 
+function RepMultiSelect({
+  reps, selected, onChange,
+}: {
+  reps: { id: string; name: string }[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const toggle = (id: string) =>
+    onChange(selected.includes(id) ? selected.filter(r => r !== id) : [...selected, id]);
+  const label = selected.length === 0
+    ? 'Select reps visited…'
+    : selected.map(id => reps.find(r => r.id === id)?.name ?? id).join(', ');
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="input-base w-full flex items-center justify-between text-left"
+      >
+        <span className={`truncate text-sm ${selected.length === 0 ? 'text-ink-muted' : 'text-ink-primary'}`}>{label}</span>
+        <ChevronDown size={13} className={`text-ink-muted flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 right-0 top-full mt-1 z-20 bg-navy-700 border border-navy-500 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1">
+            {reps.length === 0 && (
+              <p className="px-3 py-2 text-xs text-ink-muted">No active reps</p>
+            )}
+            {reps.map(r => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => toggle(r.id)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-secondary hover:bg-navy-600 hover:text-ink-primary transition-colors"
+              >
+                <span className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border ${selected.includes(r.id) ? 'bg-accent-orange border-accent-orange' : 'border-navy-400'}`}>
+                  {selected.includes(r.id) && <Check size={10} className="text-white" />}
+                </span>
+                {r.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function VisitFormModal({
   title,
   initial,
@@ -36,7 +88,8 @@ function VisitFormModal({
   onClose: () => void;
   onSubmit: (v: Omit<Visit, 'id' | 'createdAt'>) => void;
 }) {
-  const { stores } = useData();
+  const { stores, reps } = useData();
+  const activeReps = reps.filter(r => r.active).sort((a, b) => a.name.localeCompare(b.name));
   const _todayD = new Date();
   const today = `${_todayD.getFullYear()}-${String(_todayD.getMonth() + 1).padStart(2, '0')}-${String(_todayD.getDate()).padStart(2, '0')}`;
   const [form, setForm] = useState({
@@ -48,12 +101,14 @@ function VisitFormModal({
     coachingCompleted: initial?.coachingCompleted ?? false,
     redFlagsFound: initial?.redFlagsFound?.join(', ') ?? '',
     status: (initial?.status ?? 'completed') as Visit['status'],
+    repIds: initial?.repsObserved ?? [] as string[],
   });
 
   const submit = () => {
     if (!form.storeId) return;
     onSubmit({
       ...form,
+      repsObserved: form.repIds,
       redFlagsFound: form.redFlagsFound.split(',').map(s => s.trim()).filter(Boolean),
       followUpTaskIds: initial?.followUpTaskIds ?? [],
       source: 'manual',
@@ -88,6 +143,14 @@ function VisitFormModal({
             <option value="">Select store</option>
             {stores.filter(s => s.active).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
+        </div>
+        <div>
+          <label className="text-xs text-ink-muted block mb-1">Reps Visited</label>
+          <RepMultiSelect
+            reps={activeReps}
+            selected={form.repIds}
+            onChange={ids => setForm(f => ({ ...f, repIds: ids }))}
+          />
         </div>
         <div>
           <label className="text-xs text-ink-muted block mb-1">Visit Type</label>

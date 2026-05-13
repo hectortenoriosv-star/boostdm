@@ -899,63 +899,7 @@ export default function Stores() {
         </div>
       </div>
 
-      {/* ── 4. Visit Priority Queue + Store Risk Panel ─────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-        {/* Visit Priority Queue */}
-        <div className="lg:col-span-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-ink-primary flex items-center gap-2">
-              <MapPin size={15} className="text-accent-orange" /> Visit Priority Queue
-            </p>
-            {visitQueue.length > 0 && (
-              <span className="text-[11px] text-ink-muted">{pulse.needsVisit} total needing attention</span>
-            )}
-          </div>
-          {visitQueue.length === 0 ? (
-            <div className="card p-6 text-center">
-              <MapPin size={20} className="text-signal-green mx-auto mb-2" />
-              <p className="text-sm font-semibold text-signal-green">All stores visited recently</p>
-              <p className="text-xs text-ink-muted mt-1">No urgent visit priorities right now.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {visitQueue.map((ss, i) => (
-                <VisitPriorityCard key={ss.store.id} ss={ss} rank={i + 1} redRepCount={redRepsPerStore[ss.store.id] ?? 0} />
-              ))}
-              {pulse.needsVisit > visitQueue.length && (
-                <Link to="/visits" className="flex items-center justify-center gap-1.5 text-xs text-accent-orange hover:text-white transition-colors py-2 border border-navy-600 rounded-xl hover:border-accent-orange/30">
-                  View all {pulse.needsVisit} stores needing visits <ChevronRight size={12} />
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Store Risk Panel */}
-        <div className="lg:col-span-2 space-y-3">
-          <p className="text-sm font-bold text-ink-primary flex items-center gap-2">
-            <Shield size={15} className="text-signal-amber" /> Store Risk Panel
-            {riskTotal > 0 && <span className="text-[11px] text-ink-muted font-normal">{riskTotal} issues</span>}
-          </p>
-          {riskTotal === 0 ? (
-            <div className="card p-6 text-center">
-              <Shield size={20} className="text-signal-green mx-auto mb-2" />
-              <p className="text-sm font-semibold text-signal-green">No risk flags</p>
-              <p className="text-xs text-ink-muted mt-1">All stores look healthy.</p>
-            </div>
-          ) : (
-            <div className="card p-4 space-y-4">
-              <StoreRiskGroup title="Performance Risk" icon={TrendingUp} items={riskGroups.perf} dotCls="bg-signal-red" />
-              <StoreRiskGroup title="Reporting Risk" icon={FileText} items={riskGroups.reporting} dotCls="bg-signal-amber" />
-              <StoreRiskGroup title="Visit Risk" icon={MapPin} items={riskGroups.visitRisk} dotCls="bg-accent-orange" />
-              <StoreRiskGroup title="Coaching Risk" icon={BookOpen} items={riskGroups.coaching} dotCls="bg-accent-orange" />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── 5. Store Leaderboard ───────────────────────────────────────────── */}
+      {/* ── 4. Store Leaderboard ───────────────────────────────────────────── */}
       <div className="card p-0 overflow-hidden">
         <div className="px-5 pt-4 pb-3 border-b border-navy-600 space-y-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -1174,6 +1118,62 @@ export default function Stores() {
               })()}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* ── 5. Visit Priority Queue + Store Risk Panel ─────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+        {/* Visit Priority Queue */}
+        <div className="lg:col-span-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-ink-primary flex items-center gap-2">
+              <MapPin size={15} className="text-accent-orange" /> Visit Priority Queue
+            </p>
+            {visitQueue.length > 0 && (
+              <span className="text-[11px] text-ink-muted">{pulse.needsVisit} total needing attention</span>
+            )}
+          </div>
+          {visitQueue.length === 0 ? (
+            <div className="card p-6 text-center">
+              <MapPin size={20} className="text-signal-green mx-auto mb-2" />
+              <p className="text-sm font-semibold text-signal-green">All stores visited recently</p>
+              <p className="text-xs text-ink-muted mt-1">No urgent visit priorities right now.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {visitQueue.map((ss, i) => (
+                <VisitPriorityCard key={ss.store.id} ss={ss} rank={i + 1} redRepCount={redRepsPerStore[ss.store.id] ?? 0} />
+              ))}
+              {pulse.needsVisit > visitQueue.length && (
+                <Link to="/visits" className="flex items-center justify-center gap-1.5 text-xs text-accent-orange hover:text-white transition-colors py-2 border border-navy-600 rounded-xl hover:border-accent-orange/30">
+                  View all {pulse.needsVisit} stores needing visits <ChevronRight size={12} />
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Store Risk Panel */}
+        <div className="lg:col-span-2 space-y-3">
+          <p className="text-sm font-bold text-ink-primary flex items-center gap-2">
+            <Shield size={15} className="text-signal-amber" /> Store Risk Panel
+            {riskTotal > 0 && <span className="text-[11px] text-ink-muted font-normal">{riskTotal} issues</span>}
+          </p>
+          {riskTotal === 0 ? (
+            <div className="card p-6 text-center">
+              <Shield size={20} className="text-signal-green mx-auto mb-2" />
+              <p className="text-sm font-semibold text-signal-green">No risk flags</p>
+              <p className="text-xs text-ink-muted mt-1">All stores look healthy.</p>
+            </div>
+          ) : (
+            <div className="card p-4 space-y-4">
+              <StoreRiskGroup title="Performance Risk" icon={TrendingUp} items={riskGroups.perf} dotCls="bg-signal-red" />
+              <StoreRiskGroup title="Reporting Risk" icon={FileText} items={riskGroups.reporting} dotCls="bg-signal-amber" />
+              <StoreRiskGroup title="Visit Risk" icon={MapPin} items={riskGroups.visitRisk} dotCls="bg-accent-orange" />
+              <StoreRiskGroup title="Coaching Risk" icon={BookOpen} items={riskGroups.coaching} dotCls="bg-accent-orange" />
+            </div>
+          )}
         </div>
       </div>
 

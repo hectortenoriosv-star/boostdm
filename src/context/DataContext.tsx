@@ -205,6 +205,10 @@ interface DataContextValue {
   clearDemoVisits: () => void;
   clearMonthVisits: (month: number, year: number) => void;
 
+  // Demo seed clearing
+  clearDemoSeedTasks: () => void;
+  clearDemoSeedCoachingNotes: () => void;
+
   // Google Calendar & Tasks sync results
   setCalendarEvents: (events: CalendarEvent[]) => void;
   setGoogleTasks: (tasks: GoogleTask[]) => void;
@@ -381,6 +385,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const [y, m] = v.date.split('-').map(Number);
       return !(y === year && m === month);
     }));
+  }, [patch]);
+
+  const clearDemoSeedTasks = useCallback(() => {
+    patch('tasks', prev => prev.filter(t => t.source !== 'seed'));
+  }, [patch]);
+  const clearDemoSeedCoachingNotes = useCallback(() => {
+    patch('coachingNotes', prev => prev.filter(n => n.source !== 'seed'));
   }, [patch]);
 
   const setCalendarEvents = useCallback((events: CalendarEvent[]) => {
@@ -619,7 +630,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addMessageDraft, updateMessageDraft, removeMessageDraft,
     updateSettings, batchApply,
     mergeReps, mergeStores, permanentDeleteRep, permanentDeleteStore,
-    clearDemoVisits, clearMonthVisits,
+    clearDemoVisits, clearMonthVisits, clearDemoSeedTasks, clearDemoSeedCoachingNotes,
     setCalendarEvents, setGoogleTasks,
     planVisitPrefill, openPlanVisit, closePlanVisit,
   };

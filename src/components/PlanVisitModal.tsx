@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { X, MapPin } from 'lucide-react';
+import { X, MapPin, ChevronDown, Check } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import type { Visit, VisitType, PlanVisitPrefill } from '../types';
 
@@ -20,6 +20,57 @@ function localToday(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function RepMultiSelect({
+  reps, selected, onChange,
+}: {
+  reps: { id: string; name: string }[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const toggle = (id: string) =>
+    onChange(selected.includes(id) ? selected.filter(r => r !== id) : [...selected, id]);
+  const label = selected.length === 0
+    ? 'Select reps visited…'
+    : selected.map(id => reps.find(r => r.id === id)?.name ?? id).join(', ');
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="input-base w-full flex items-center justify-between text-left"
+      >
+        <span className={`truncate text-sm ${selected.length === 0 ? 'text-ink-muted' : 'text-ink-primary'}`}>{label}</span>
+        <ChevronDown size={13} className={`text-ink-muted flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 right-0 top-full mt-1 z-20 bg-navy-700 border border-navy-500 rounded-xl shadow-xl max-h-48 overflow-y-auto py-1">
+            {reps.length === 0 && (
+              <p className="px-3 py-2 text-xs text-ink-muted">No active reps</p>
+            )}
+            {reps.map(r => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => toggle(r.id)}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-ink-secondary hover:bg-navy-600 hover:text-ink-primary transition-colors"
+              >
+                <span className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border ${selected.includes(r.id) ? 'bg-accent-orange border-accent-orange' : 'border-navy-400'}`}>
+                  {selected.includes(r.id) && <Check size={10} className="text-white" />}
+                </span>
+                {r.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function PlanVisitModal({
   prefill,
   onClose,
@@ -27,15 +78,20 @@ export function PlanVisitModal({
   prefill?: PlanVisitPrefill;
   onClose: () => void;
 }) {
-  const { stores, addVisit } = useData();
+  const { stores, reps, addVisit } = useData();
   const submittingRef = useRef(false);
+  const activeReps = reps.filter(r => r.active).sort((a, b) => a.name.localeCompare(b.name));
 
   const [form, setForm] = useState({
-    date:      prefill?.date    ?? localToday(),
-    storeId:   prefill?.storeId ?? '',
-    visitType: 'Sales Focused Visit' as VisitType,
-    notes:     prefill?.notes   ?? '',
-    status:    'planned' as Visit['status'],
+    date:        prefill?.date    ?? localToday(),
+    storeId:     prefill?.storeId ?? '',
+    visitType:   'Sales Focused Visit' as VisitType,
+    notes:       prefill?.notes   ?? '',
+    status:      'planned' as Visit['status'],
+    startTime:   '',
+    endTime:     '',
+    focusArea:   prefill?.focusArea ?? '',
+    repIds:      prefill?.repIds ?? (prefill?.repId ? [prefill.repId] : []) as string[],
   });
 
   const submit = () => {
@@ -47,9 +103,12 @@ export function PlanVisitModal({
       visitType:         form.visitType,
       status:            form.status,
       notes:             form.notes,
+      startTime:         form.startTime || undefined,
+      endTime:           form.endTime || undefined,
+      focusArea:         form.focusArea || undefined,
+      repsObserved:      form.repIds.length > 0 ? form.repIds : [],
       timeInStore:       '',
       coachingCompleted: false,
-      repsObserved:      [],
       redFlagsFound:     [],
       followUpTaskIds:   [],
       source:            'manual',
@@ -106,6 +165,15 @@ export function PlanVisitModal({
         </div>
 
         <div>
+          <label className="text-xs text-ink-muted block mb-1">Reps Visited</label>
+          <RepMultiSelect
+            reps={activeReps}
+            selected={form.repIds}
+            onChange={ids => setForm(f => ({ ...f, repIds: ids }))}
+          />
+        </div>
+
+        <div>
           <label className="text-xs text-ink-muted block mb-1">Visit Type</label>
           <select
             className="input-base w-full"
@@ -114,6 +182,37 @@ export function PlanVisitModal({
           >
             {VISIT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-ink-muted block mb-1">Start Time</label>
+            <input
+              type="time"
+              className="input-base w-full"
+              value={form.startTime}
+              onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-ink-muted block mb-1">End Time</label>
+            <input
+              type="time"
+              className="input-base w-full"
+              value={form.endTime}
+              onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs text-ink-muted block mb-1">Focus Area</label>
+          <input
+            className="input-base w-full"
+            placeholder="e.g. BP Pitch, ATU Close, Greet + Engage"
+            value={form.focusArea}
+            onChange={e => setForm(f => ({ ...f, focusArea: e.target.value }))}
+          />
         </div>
 
         <div>

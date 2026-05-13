@@ -190,10 +190,10 @@ function getDataHealth(
 export default function SettingsPage() {
   const {
     settings, updateSettings, resetToSeed,
-    stores, reps, dailyPerf, visits,
+    stores, reps, dailyPerf, visits, tasks,
     monthlyRepPerf, monthlyStorePerf, coachingNotes, eodReports,
     patchMonthlyRepPerf, patchMonthlyStorePerf, addCoachingNote,
-    cleanDuplicateEODReports,
+    cleanDuplicateEODReports, clearDemoSeedTasks, clearDemoSeedCoachingNotes,
     reportingPeriod,
     calendarEvents, googleTasks, setCalendarEvents, setGoogleTasks,
     replaceWeekShifts,
@@ -1720,6 +1720,33 @@ export default function SettingsPage() {
               </button>
             )}
           </div>
+
+          {(tasks.some(t => t.source === 'seed') || coachingNotes.some(n => n.source === 'seed')) && (
+            <div className="p-4 bg-navy-700 rounded-xl border border-signal-amber/20 sm:col-span-2">
+              <p className="text-sm font-semibold text-signal-amber mb-1">Clear Demo Seeds</p>
+              <p className="text-xs text-ink-secondary mb-3">
+                Remove demo seed records without affecting your real data. Only clears items explicitly marked as demo seeds.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {tasks.some(t => t.source === 'seed') && (
+                  <button
+                    onClick={clearDemoSeedTasks}
+                    className="btn-ghost text-xs text-signal-amber hover:text-amber-300 flex items-center gap-1.5 border border-signal-amber/30"
+                  >
+                    Clear {tasks.filter(t => t.source === 'seed').length} Demo Task{tasks.filter(t => t.source === 'seed').length !== 1 ? 's' : ''}
+                  </button>
+                )}
+                {coachingNotes.some(n => n.source === 'seed') && (
+                  <button
+                    onClick={clearDemoSeedCoachingNotes}
+                    className="btn-ghost text-xs text-signal-amber hover:text-amber-300 flex items-center gap-1.5 border border-signal-amber/30"
+                  >
+                    Clear {coachingNotes.filter(n => n.source === 'seed').length} Demo Note{coachingNotes.filter(n => n.source === 'seed').length !== 1 ? 's' : ''}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="p-4 bg-navy-700 rounded-xl border border-signal-red/20">
             <p className="text-sm font-semibold text-signal-red mb-1">Reset to Seed Data</p>

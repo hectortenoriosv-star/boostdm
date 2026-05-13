@@ -906,6 +906,7 @@ export default function CoachingHub() {
     addCoachingNote, updateCoachingNote,
     addEODReport, updateEODReport,
     coachingQueue, updateCoachingQueueItem,
+    clearDemoSeedCoachingNotes,
   } = useData();
 
   const initialTab: TabFilter = (() => {
@@ -1277,6 +1278,17 @@ export default function CoachingHub() {
                     {icon}{label}
                   </button>
                 ))}
+                {coachingNotes.some(n => n.source === 'seed') && (
+                  <>
+                    <div className="border-t border-navy-600 my-1" />
+                    <button
+                      onClick={() => { clearDemoSeedCoachingNotes(); setMoreOpen(false); }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-signal-red hover:bg-navy-600 transition-colors"
+                    >
+                      Clear Demo Seeds ({coachingNotes.filter(n => n.source === 'seed').length})
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>

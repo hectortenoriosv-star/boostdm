@@ -631,7 +631,7 @@ export default function DailyNumbers() {
                 valueClass={dayGap > 0 ? 'text-signal-red' : 'text-signal-green'}
               />
               <MetricTile label="% to Goal"   value={`${dayPct}%`}            valueClass={pctColor(dayPct)} />
-              <MetricTile label="Boxes"        value={dayBoxes}                valueClass="text-accent-blue-light" />
+              <MetricTile label="Boxes"        value={dayBoxes}                valueClass="text-cyan-400" />
               <MetricTile
                 label="At Goal"
                 value={`${atGoalCount}/${selectedDayRows.length}`}
@@ -692,185 +692,6 @@ export default function DailyNumbers() {
             </div>
           </div>
 
-          {/* ── 4. DAILY ACTION QUEUE ─────────────────────────────────────── */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Zap size={15} className="text-accent-orange-light" />
-              <h2 className="text-sm font-bold text-ink-primary">Daily Action Queue</h2>
-              <span className="badge-neutral text-[10px]">{fmtDate(selectedDate)}</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-              {/* COACH */}
-              <div className="card p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen size={14} className="text-signal-red" />
-                  <span className="text-xs font-bold text-ink-primary uppercase tracking-wider">Coach</span>
-                  {coachingQueue.length > 0 && (
-                    <span className="badge-red text-[10px] ml-auto">{coachingQueue.length}</span>
-                  )}
-                </div>
-                {coachingQueue.length === 0 ? (
-                  <p className="text-xs text-ink-muted py-3 text-center">All reps above 75% today.</p>
-                ) : (
-                  coachingQueue.slice(0, 4).map(row => {
-                    const rep = reps.find(r => r.id === row.repId);
-                    const issue = row.boxes === 0
-                      ? 'Zero boxes — confirm shift activity and sales process.'
-                      : row.attachmentPctToDaily < 40
-                        ? 'Very low attachment — review offer stack and close attempt.'
-                        : 'Below 75% — review discovery, bundle, and BP close.';
-                    return (
-                      <div key={row.id} className="bg-navy-600 rounded-xl p-3 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-ink-primary truncate">
-                              {rep
-                                ? <Link to={`/reps/${rep.id}`} className="hover:text-accent-blue-light hover:underline">{rep.name}</Link>
-                                : row.repId}
-                            </p>
-                            <p className="text-[11px] text-ink-muted truncate">{storeName(row.storeId)}</p>
-                          </div>
-                          {row.boxes === 0
-                            ? <span className="badge-red text-[10px] shrink-0">0 boxes</span>
-                            : <span className={`text-xs font-bold shrink-0 ${pctColor(row.attachmentPctToDaily)}`}>{row.attachmentPctToDaily}%</span>}
-                        </div>
-                        <p className="text-[11px] text-ink-secondary leading-relaxed">{issue}</p>
-                        <div className="flex gap-1.5">
-                          <Link
-                            to={rep ? `/reps/${rep.id}` : '/reps'}
-                            className="flex-1 text-center text-[11px] font-semibold text-accent-orange-light bg-accent-orange/10 hover:bg-accent-orange/20 border border-accent-orange/20 rounded-lg py-1.5 transition-colors">
-                            {row.boxes === 0 ? 'Verify Activity' : 'Coach Rep'}
-                          </Link>
-                          <Link to="/tasks" className="text-[11px] font-medium text-ink-muted hover:text-ink-secondary bg-navy-700 rounded-lg px-2.5 py-1.5 transition-colors">
-                            Task
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-                {coachingQueue.length > 4 && (
-                  <button onClick={() => setFilterStatus('below75')}
-                    className="text-xs text-accent-blue-light hover:underline text-center mt-auto">
-                    +{coachingQueue.length - 4} more — show all below
-                  </button>
-                )}
-              </div>
-
-              {/* RECOGNIZE */}
-              <div className="card p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <Star size={14} className="text-signal-green" />
-                  <span className="text-xs font-bold text-ink-primary uppercase tracking-wider">Recognize</span>
-                  {recognitionQueue.length > 0 && (
-                    <span className="badge-green text-[10px] ml-auto">{recognitionQueue.length}</span>
-                  )}
-                </div>
-                {recognitionQueue.length === 0 ? (
-                  <p className="text-xs text-ink-muted py-3 text-center">No reps at goal today.</p>
-                ) : (
-                  recognitionQueue.slice(0, 4).map(row => {
-                    const rep = reps.find(r => r.id === row.repId);
-                    return (
-                      <div key={row.id} className="bg-navy-600 rounded-xl p-3 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-xs font-semibold text-ink-primary truncate">
-                              {rep
-                                ? <Link to={`/reps/${rep.id}`} className="hover:text-accent-blue-light hover:underline">{rep.name}</Link>
-                                : row.repId}
-                            </p>
-                            <p className="text-[11px] text-ink-muted truncate">{storeName(row.storeId)}</p>
-                          </div>
-                          <span className="text-xs font-bold text-signal-green shrink-0">{row.attachmentPctToDaily}%</span>
-                        </div>
-                        <p className="text-[11px] text-ink-secondary">
-                          {fmtCurrency(row.attachment)} attachments · {row.boxes} box{row.boxes !== 1 ? 'es' : ''}
-                        </p>
-                        <div className="flex gap-1.5">
-                          <Link
-                            to={rep ? `/reps/${rep.id}` : '/reps'}
-                            className="flex-1 text-center text-[11px] font-semibold text-signal-green bg-signal-green/10 hover:bg-signal-green/20 border border-signal-green/20 rounded-lg py-1.5 transition-colors">
-                            Recognize
-                          </Link>
-                          <Link to="/" className="text-[11px] font-medium text-ink-muted hover:text-ink-secondary bg-navy-700 rounded-lg px-2.5 py-1.5 transition-colors">
-                            Share
-                          </Link>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* VERIFY */}
-              <div className="card p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle size={14} className="text-signal-amber" />
-                  <span className="text-xs font-bold text-ink-primary uppercase tracking-wider">Verify / Follow Up</span>
-                </div>
-
-                {verifyQueue.length > 0 && (
-                  <div className="bg-navy-600 rounded-xl p-3 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-xs font-semibold text-ink-primary">Zero-Box Reps</p>
-                        <p className="text-[11px] text-ink-muted">{verifyQueue.length} rep{verifyQueue.length !== 1 ? 's' : ''} · {fmtDate(selectedDate)}</p>
-                      </div>
-                      <span className="badge-red text-[10px] shrink-0">{verifyQueue.length}</span>
-                    </div>
-                    <p className="text-[11px] text-ink-secondary">Confirm shift activity, customer traffic, and sales process.</p>
-                    <button
-                      onClick={() => setFilterStatus('zero')}
-                      className="w-full text-[11px] font-semibold text-signal-amber bg-signal-amber/10 hover:bg-signal-amber/20 border border-signal-amber/20 rounded-lg py-1.5 transition-colors">
-                      View Zero-Box Reps
-                    </button>
-                  </div>
-                )}
-
-                {below75Count > 0 && (
-                  <div className="bg-navy-600 rounded-xl p-3 space-y-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-xs font-semibold text-ink-primary">Below 75%</p>
-                        <p className="text-[11px] text-ink-muted">{below75Count} rep{below75Count !== 1 ? 's' : ''} need coaching</p>
-                      </div>
-                      <span className="badge-amber text-[10px] shrink-0">{below75Count}</span>
-                    </div>
-                    <p className="text-[11px] text-ink-secondary">Create a coaching queue and reach out before the next shift.</p>
-                    <button
-                      onClick={() => setFilterStatus('below75')}
-                      className="w-full text-[11px] font-semibold text-accent-blue-light bg-accent-blue/10 hover:bg-accent-blue/20 border border-accent-blue/20 rounded-lg py-1.5 transition-colors">
-                      Build Coaching Queue
-                    </button>
-                  </div>
-                )}
-
-                {verifyQueue.length === 0 && below75Count === 0 && (
-                  <p className="text-xs text-ink-muted py-3 text-center">No follow-up actions needed today.</p>
-                )}
-
-                {/* MTD pace bar */}
-                <div className="bg-navy-600 rounded-xl p-3 space-y-1.5 mt-auto">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold text-ink-primary">MTD Pace</p>
-                    <span className={`text-xs font-bold ${pctColor(mtdAvgPct)}`}>{mtdAvgPct}%</span>
-                  </div>
-                  <div className="progress-rail">
-                    <div
-                      className={`h-full rounded-full transition-all ${
-                        mtdAvgPct >= 100 ? 'bg-signal-green' : mtdAvgPct >= 75 ? 'bg-signal-amber' : 'bg-signal-red'
-                      }`}
-                      style={{ width: `${Math.min(100, mtdAvgPct)}%` }}
-                    />
-                  </div>
-                  <p className="text-[11px] text-ink-muted">{mtdData.length} days tracked · {daysRemaining} remaining</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* ── 5. TREND CHART ────────────────────────────────────────────── */}
           <div className="card p-5">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -893,7 +714,7 @@ export default function DailyNumbers() {
                   onClick={() => setShowBoxes(v => !v)}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
                     showBoxes
-                      ? 'bg-accent-blue/15 text-accent-blue-light border-accent-blue/30'
+                      ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30'
                       : 'text-ink-muted border-navy-500 hover:text-ink-secondary'
                   }`}>
                   <span className="w-4 h-0.5 inline-block bg-current rounded" />
@@ -965,6 +786,121 @@ export default function DailyNumbers() {
             )}
           </div>
 
+          {/* ── 8. ENTRIES TABLE ──────────────────────────────────────────── */}
+          <div className="card p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <MessageSquare size={15} className="text-ink-secondary" />
+                <h3 className="text-sm font-bold text-ink-primary">
+                  {fmtDate(selectedDate)} Entries
+                </h3>
+                <span className="badge-neutral text-[10px]">
+                  {filteredRows.length}{filteredRows.length !== selectedDayRows.length && ` / ${selectedDayRows.length}`}
+                </span>
+              </div>
+              <div className="relative">
+                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-muted" />
+                <input
+                  type="text"
+                  placeholder="Search rep or store…"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="input-base text-xs pl-7 py-1.5 h-8 w-48"
+                />
+              </div>
+            </div>
+
+            {filteredRows.length === 0 ? (
+              <p className="text-xs text-ink-muted text-center py-8">No entries match the current filters.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-ink-muted border-b border-navy-500">
+                      {([
+                        ['rep', 'Rep'],
+                        ['store', 'Store'],
+                        ['boxes', 'Boxes'],
+                        ['goal', 'Goal'],
+                        ['attachment', 'Attachments'],
+                        ['gap', 'Gap'],
+                        ['pct', '% to Goal'],
+                      ] as [SortKey, string][]).map(([key, label]) => (
+                        <th
+                          key={key}
+                          className="text-left py-2 pr-4 font-semibold cursor-pointer hover:text-ink-secondary select-none whitespace-nowrap"
+                          onClick={() => handleSort(key)}>
+                          <span className="flex items-center gap-1">{label} <SortIcon col={key} /></span>
+                        </th>
+                      ))}
+                      <th className="py-2 pr-4 font-semibold text-left">Status</th>
+                      <th className="py-2 text-right font-semibold">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRows.map(row => {
+                      const rep   = reps.find(r => r.id === row.repId);
+                      const store = stores.find(s => s.id === row.storeId);
+                      const st = getRepDailyStatus(row);
+                      const { cls, label } = REP_STATUS_BADGE[st];
+                      const gap = row.dailyGoal - row.attachment;
+                      return (
+                        <tr
+                          key={row.id}
+                          className={`border-b border-navy-600 hover:bg-navy-700/40 transition-colors ${
+                            st === 'urgent' || st === 'zeroBoxes' ? 'bg-signal-red/[0.03]' : ''
+                          }`}>
+                          <td className="py-2.5 pr-4 whitespace-nowrap font-medium">
+                            {rep
+                              ? <Link to={`/reps/${rep.id}`} className="text-ink-primary hover:text-accent-blue-light hover:underline">{rep.name}</Link>
+                              : <span className="text-ink-muted">{row.repId}</span>}
+                          </td>
+                          <td className="py-2.5 pr-4 max-w-[160px]">
+                            {store
+                              ? <Link to={`/stores/${store.id}`} className="text-ink-secondary hover:text-accent-blue-light hover:underline truncate block">{store.name}</Link>
+                              : <span className="text-ink-muted">{row.storeId}</span>}
+                          </td>
+                          <td className="py-2.5 pr-4 tabular-nums text-center">
+                            {row.boxes === 0
+                              ? <span className="font-bold text-signal-red">0</span>
+                              : <span className="text-ink-secondary">{row.boxes}</span>}
+                          </td>
+                          <td className="py-2.5 pr-4 text-ink-muted tabular-nums">
+                            {fmtCurrency(row.dailyGoal)}
+                          </td>
+                          <td className="py-2.5 pr-4 text-ink-primary font-medium tabular-nums">
+                            {fmtCurrency(row.attachment)}
+                          </td>
+                          <td className={`py-2.5 pr-4 tabular-nums font-medium ${gap > 0 ? 'text-signal-red' : 'text-signal-green'}`}>
+                            {gap > 0
+                              ? `-${fmtCurrency(Math.round(gap))}`
+                              : `+${fmtCurrency(Math.round(Math.abs(gap)))}`}
+                          </td>
+                          <td className={`py-2.5 pr-4 font-bold tabular-nums ${pctColor(row.attachmentPctToDaily)}`}>
+                            {row.attachmentPctToDaily}%
+                          </td>
+                          <td className="py-2.5 pr-4">
+                            <span className={`${cls} text-[10px]`}>{label}</span>
+                          </td>
+                          <td className="py-2.5 text-right whitespace-nowrap">
+                            {st === 'winning' ? (
+                              <Link to={`/reps/${row.repId}`} className="text-[11px] text-signal-green hover:underline">Recognize</Link>
+                            ) : st === 'zeroBoxes' ? (
+                              <Link to={`/reps/${row.repId}`} className="text-[11px] text-signal-amber hover:underline">Verify</Link>
+                            ) : st === 'missingData' ? (
+                              <span className="text-[11px] text-ink-muted">Request EOD</span>
+                            ) : (
+                              <Link to={`/reps/${row.repId}`} className="text-[11px] text-accent-orange-light hover:underline">Coach</Link>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
           {/* ── 6. WINNERS + COACHING QUEUE ───────────────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
@@ -1159,121 +1095,185 @@ export default function DailyNumbers() {
             )}
           </div>
 
-          {/* ── 8. ENTRIES TABLE ──────────────────────────────────────────── */}
-          <div className="card p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div className="flex items-center gap-2">
-                <MessageSquare size={15} className="text-ink-secondary" />
-                <h3 className="text-sm font-bold text-ink-primary">
-                  {fmtDate(selectedDate)} Entries
-                </h3>
-                <span className="badge-neutral text-[10px]">
-                  {filteredRows.length}{filteredRows.length !== selectedDayRows.length && ` / ${selectedDayRows.length}`}
-                </span>
+          {/* ── 4. DAILY ACTION QUEUE ─────────────────────────────────────── */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <Zap size={15} className="text-accent-orange-light" />
+              <h2 className="text-sm font-bold text-ink-primary">Daily Action Queue</h2>
+              <span className="badge-neutral text-[10px]">{fmtDate(selectedDate)}</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+              {/* COACH */}
+              <div className="card p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen size={14} className="text-signal-red" />
+                  <span className="text-xs font-bold text-ink-primary uppercase tracking-wider">Coach</span>
+                  {coachingQueue.length > 0 && (
+                    <span className="badge-red text-[10px] ml-auto">{coachingQueue.length}</span>
+                  )}
+                </div>
+                {coachingQueue.length === 0 ? (
+                  <p className="text-xs text-ink-muted py-3 text-center">All reps above 75% today.</p>
+                ) : (
+                  coachingQueue.slice(0, 4).map(row => {
+                    const rep = reps.find(r => r.id === row.repId);
+                    const issue = row.boxes === 0
+                      ? 'Zero boxes — confirm shift activity and sales process.'
+                      : row.attachmentPctToDaily < 40
+                        ? 'Very low attachment — review offer stack and close attempt.'
+                        : 'Below 75% — review discovery, bundle, and BP close.';
+                    return (
+                      <div key={row.id} className="bg-navy-600 rounded-xl p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-ink-primary truncate">
+                              {rep
+                                ? <Link to={`/reps/${rep.id}`} className="hover:text-accent-blue-light hover:underline">{rep.name}</Link>
+                                : row.repId}
+                            </p>
+                            <p className="text-[11px] text-ink-muted truncate">{storeName(row.storeId)}</p>
+                          </div>
+                          {row.boxes === 0
+                            ? <span className="badge-red text-[10px] shrink-0">0 boxes</span>
+                            : <span className={`text-xs font-bold shrink-0 ${pctColor(row.attachmentPctToDaily)}`}>{row.attachmentPctToDaily}%</span>}
+                        </div>
+                        <p className="text-[11px] text-ink-secondary leading-relaxed">{issue}</p>
+                        <div className="flex gap-1.5">
+                          <Link
+                            to={rep ? `/reps/${rep.id}` : '/reps'}
+                            className="flex-1 text-center text-[11px] font-semibold text-accent-orange-light bg-accent-orange/10 hover:bg-accent-orange/20 border border-accent-orange/20 rounded-lg py-1.5 transition-colors">
+                            {row.boxes === 0 ? 'Verify Activity' : 'Coach Rep'}
+                          </Link>
+                          <Link to="/tasks" className="text-[11px] font-medium text-ink-muted hover:text-ink-secondary bg-navy-700 rounded-lg px-2.5 py-1.5 transition-colors">
+                            Task
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                {coachingQueue.length > 4 && (
+                  <button onClick={() => setFilterStatus('below75')}
+                    className="text-xs text-accent-blue-light hover:underline text-center mt-auto">
+                    +{coachingQueue.length - 4} more — show all below
+                  </button>
+                )}
               </div>
-              <div className="relative">
-                <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-muted" />
-                <input
-                  type="text"
-                  placeholder="Search rep or store…"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="input-base text-xs pl-7 py-1.5 h-8 w-48"
-                />
+
+              {/* RECOGNIZE */}
+              <div className="card p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <Star size={14} className="text-signal-green" />
+                  <span className="text-xs font-bold text-ink-primary uppercase tracking-wider">Recognize</span>
+                  {recognitionQueue.length > 0 && (
+                    <span className="badge-green text-[10px] ml-auto">{recognitionQueue.length}</span>
+                  )}
+                </div>
+                {recognitionQueue.length === 0 ? (
+                  <p className="text-xs text-ink-muted py-3 text-center">No reps at goal today.</p>
+                ) : (
+                  recognitionQueue.slice(0, 4).map(row => {
+                    const rep = reps.find(r => r.id === row.repId);
+                    return (
+                      <div key={row.id} className="bg-navy-600 rounded-xl p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-ink-primary truncate">
+                              {rep
+                                ? <Link to={`/reps/${rep.id}`} className="hover:text-accent-blue-light hover:underline">{rep.name}</Link>
+                                : row.repId}
+                            </p>
+                            <p className="text-[11px] text-ink-muted truncate">{storeName(row.storeId)}</p>
+                          </div>
+                          <span className="text-xs font-bold text-signal-green shrink-0">{row.attachmentPctToDaily}%</span>
+                        </div>
+                        <p className="text-[11px] text-ink-secondary">
+                          {fmtCurrency(row.attachment)} attachments · {row.boxes} box{row.boxes !== 1 ? 'es' : ''}
+                        </p>
+                        <div className="flex gap-1.5">
+                          <Link
+                            to={rep ? `/reps/${rep.id}` : '/reps'}
+                            className="flex-1 text-center text-[11px] font-semibold text-signal-green bg-signal-green/10 hover:bg-signal-green/20 border border-signal-green/20 rounded-lg py-1.5 transition-colors">
+                            Recognize
+                          </Link>
+                          <Link to="/" className="text-[11px] font-medium text-ink-muted hover:text-ink-secondary bg-navy-700 rounded-lg px-2.5 py-1.5 transition-colors">
+                            Share
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* VERIFY */}
+              <div className="card p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle size={14} className="text-signal-amber" />
+                  <span className="text-xs font-bold text-ink-primary uppercase tracking-wider">Verify / Follow Up</span>
+                </div>
+
+                {verifyQueue.length > 0 && (
+                  <div className="bg-navy-600 rounded-xl p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-xs font-semibold text-ink-primary">Zero-Box Reps</p>
+                        <p className="text-[11px] text-ink-muted">{verifyQueue.length} rep{verifyQueue.length !== 1 ? 's' : ''} · {fmtDate(selectedDate)}</p>
+                      </div>
+                      <span className="badge-red text-[10px] shrink-0">{verifyQueue.length}</span>
+                    </div>
+                    <p className="text-[11px] text-ink-secondary">Confirm shift activity, customer traffic, and sales process.</p>
+                    <button
+                      onClick={() => setFilterStatus('zero')}
+                      className="w-full text-[11px] font-semibold text-signal-amber bg-signal-amber/10 hover:bg-signal-amber/20 border border-signal-amber/20 rounded-lg py-1.5 transition-colors">
+                      View Zero-Box Reps
+                    </button>
+                  </div>
+                )}
+
+                {below75Count > 0 && (
+                  <div className="bg-navy-600 rounded-xl p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-xs font-semibold text-ink-primary">Below 75%</p>
+                        <p className="text-[11px] text-ink-muted">{below75Count} rep{below75Count !== 1 ? 's' : ''} need coaching</p>
+                      </div>
+                      <span className="badge-amber text-[10px] shrink-0">{below75Count}</span>
+                    </div>
+                    <p className="text-[11px] text-ink-secondary">Create a coaching queue and reach out before the next shift.</p>
+                    <button
+                      onClick={() => setFilterStatus('below75')}
+                      className="w-full text-[11px] font-semibold text-accent-blue-light bg-accent-blue/10 hover:bg-accent-blue/20 border border-accent-blue/20 rounded-lg py-1.5 transition-colors">
+                      Build Coaching Queue
+                    </button>
+                  </div>
+                )}
+
+                {verifyQueue.length === 0 && below75Count === 0 && (
+                  <p className="text-xs text-ink-muted py-3 text-center">No follow-up actions needed today.</p>
+                )}
+
+                {/* MTD pace bar */}
+                <div className="bg-navy-600 rounded-xl p-3 space-y-1.5 mt-auto">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-ink-primary">MTD Pace</p>
+                    <span className={`text-xs font-bold ${pctColor(mtdAvgPct)}`}>{mtdAvgPct}%</span>
+                  </div>
+                  <div className="progress-rail">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        mtdAvgPct >= 100 ? 'bg-signal-green' : mtdAvgPct >= 75 ? 'bg-signal-amber' : 'bg-signal-red'
+                      }`}
+                      style={{ width: `${Math.min(100, mtdAvgPct)}%` }}
+                    />
+                  </div>
+                  <p className="text-[11px] text-ink-muted">{mtdData.length} days tracked · {daysRemaining} remaining</p>
+                </div>
               </div>
             </div>
-
-            {filteredRows.length === 0 ? (
-              <p className="text-xs text-ink-muted text-center py-8">No entries match the current filters.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="text-ink-muted border-b border-navy-500">
-                      {([
-                        ['rep', 'Rep'],
-                        ['store', 'Store'],
-                        ['boxes', 'Boxes'],
-                        ['goal', 'Goal'],
-                        ['attachment', 'Attachments'],
-                        ['gap', 'Gap'],
-                        ['pct', '% to Goal'],
-                      ] as [SortKey, string][]).map(([key, label]) => (
-                        <th
-                          key={key}
-                          className="text-left py-2 pr-4 font-semibold cursor-pointer hover:text-ink-secondary select-none whitespace-nowrap"
-                          onClick={() => handleSort(key)}>
-                          <span className="flex items-center gap-1">{label} <SortIcon col={key} /></span>
-                        </th>
-                      ))}
-                      <th className="py-2 pr-4 font-semibold text-left">Status</th>
-                      <th className="py-2 text-right font-semibold">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRows.map(row => {
-                      const rep   = reps.find(r => r.id === row.repId);
-                      const store = stores.find(s => s.id === row.storeId);
-                      const st = getRepDailyStatus(row);
-                      const { cls, label } = REP_STATUS_BADGE[st];
-                      const gap = row.dailyGoal - row.attachment;
-                      return (
-                        <tr
-                          key={row.id}
-                          className={`border-b border-navy-600 hover:bg-navy-700/40 transition-colors ${
-                            st === 'urgent' || st === 'zeroBoxes' ? 'bg-signal-red/[0.03]' : ''
-                          }`}>
-                          <td className="py-2.5 pr-4 whitespace-nowrap font-medium">
-                            {rep
-                              ? <Link to={`/reps/${rep.id}`} className="text-ink-primary hover:text-accent-blue-light hover:underline">{rep.name}</Link>
-                              : <span className="text-ink-muted">{row.repId}</span>}
-                          </td>
-                          <td className="py-2.5 pr-4 max-w-[160px]">
-                            {store
-                              ? <Link to={`/stores/${store.id}`} className="text-ink-secondary hover:text-accent-blue-light hover:underline truncate block">{store.name}</Link>
-                              : <span className="text-ink-muted">{row.storeId}</span>}
-                          </td>
-                          <td className="py-2.5 pr-4 tabular-nums text-center">
-                            {row.boxes === 0
-                              ? <span className="font-bold text-signal-red">0</span>
-                              : <span className="text-ink-secondary">{row.boxes}</span>}
-                          </td>
-                          <td className="py-2.5 pr-4 text-ink-muted tabular-nums">
-                            {fmtCurrency(row.dailyGoal)}
-                          </td>
-                          <td className="py-2.5 pr-4 text-ink-primary font-medium tabular-nums">
-                            {fmtCurrency(row.attachment)}
-                          </td>
-                          <td className={`py-2.5 pr-4 tabular-nums font-medium ${gap > 0 ? 'text-signal-red' : 'text-signal-green'}`}>
-                            {gap > 0
-                              ? `-${fmtCurrency(Math.round(gap))}`
-                              : `+${fmtCurrency(Math.round(Math.abs(gap)))}`}
-                          </td>
-                          <td className={`py-2.5 pr-4 font-bold tabular-nums ${pctColor(row.attachmentPctToDaily)}`}>
-                            {row.attachmentPctToDaily}%
-                          </td>
-                          <td className="py-2.5 pr-4">
-                            <span className={`${cls} text-[10px]`}>{label}</span>
-                          </td>
-                          <td className="py-2.5 text-right whitespace-nowrap">
-                            {st === 'winning' ? (
-                              <Link to={`/reps/${row.repId}`} className="text-[11px] text-signal-green hover:underline">Recognize</Link>
-                            ) : st === 'zeroBoxes' ? (
-                              <Link to={`/reps/${row.repId}`} className="text-[11px] text-signal-amber hover:underline">Verify</Link>
-                            ) : st === 'missingData' ? (
-                              <span className="text-[11px] text-ink-muted">Request EOD</span>
-                            ) : (
-                              <Link to={`/reps/${row.repId}`} className="text-[11px] text-accent-orange-light hover:underline">Coach</Link>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
+
         </>
       )}
 

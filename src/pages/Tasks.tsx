@@ -940,7 +940,7 @@ function CompletedRow({
 
 export default function Tasks() {
   const {
-    tasks, addTask, updateTask, removeTask,
+    tasks, addTask, updateTask, removeTask, clearDemoSeedTasks,
     reps, stores, repSummaries, storeSummaries,
     coachingNotes, eodReports,
     googleTasks, setGoogleTasks,
@@ -1188,6 +1188,20 @@ export default function Tasks() {
                       {item.label}
                     </button>
                   ))}
+                  {tasks.some(t => t.source === 'seed') && (
+                    <>
+                      <div className="border-t border-navy-600 my-1" />
+                      <button
+                        onClick={() => {
+                          clearDemoSeedTasks();
+                          setMoreOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs text-signal-red hover:bg-navy-600 transition-colors"
+                      >
+                        Clear Demo Seeds ({tasks.filter(t => t.source === 'seed').length})
+                      </button>
+                    </>
+                  )}
                 </div>
               </>
             )}

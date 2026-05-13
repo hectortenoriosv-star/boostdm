@@ -124,7 +124,7 @@ export default function Dashboard() {
   const {
     repSummaries, storeSummaries, districtStats, visitStats,
     tasks, visits, dailyPerf, reps, settings, shifts, reportingPeriod,
-    calendarEvents, googleTasks, coachingNotes, openPlanVisit,
+    calendarEvents, googleTasks, coachingNotes, openPlanVisit, addTask,
   } = useData();
 
   const navigate = useNavigate();
@@ -137,6 +137,9 @@ export default function Dashboard() {
   const [selectedDay, setSelectedDay]         = useState<string | null>(null);
   const [glanceOpen, setGlanceOpen]           = useState(false);
   const [moreOpen, setMoreOpen]               = useState(false);
+  const [quickTaskDate, setQuickTaskDate]     = useState<string | null>(null);
+  const [quickTaskTitle, setQuickTaskTitle]   = useState('');
+  const [quickTaskPriority, setQuickTaskPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>('medium');
   const moreRef                                = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -725,12 +728,75 @@ export default function Dashboard() {
         {selectedDayData && (
           <div className="mt-3 card p-5 space-y-4 border border-accent-blue/20">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-bold text-ink-primary">
-                {selectedDayData.dayShort}, {selectedDayData.dateLabel}
-                {selectedDayData.isToday && <span className="ml-2 badge-blue !text-[10px]">Today</span>}
-              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-sm font-bold text-ink-primary">
+                  {selectedDayData.dayShort}, {selectedDayData.dateLabel}
+                  {selectedDayData.isToday && <span className="ml-2 badge-blue !text-[10px]">Today</span>}
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => { setQuickTaskDate(selectedDayData.dateStr); setQuickTaskTitle(''); setQuickTaskPriority('medium'); }}
+                    className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-signal-amber/15 text-signal-amber hover:bg-signal-amber/25 transition-all"
+                  >
+                    <Plus size={10} /> Task
+                  </button>
+                  <button
+                    onClick={() => openPlanVisit({ date: selectedDayData.dateStr })}
+                    className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-accent-orange/15 text-accent-orange hover:bg-accent-orange/25 transition-all"
+                  >
+                    <Plus size={10} /> Visit
+                  </button>
+                </div>
+              </div>
               <button onClick={() => setSelectedDay(null)} className="btn-ghost p-1"><X size={13} /></button>
             </div>
+
+            {/* Quick-add task inline form */}
+            {quickTaskDate === selectedDayData.dateStr && (
+              <div className="bg-navy-800/60 border border-signal-amber/20 rounded-xl p-3 space-y-2">
+                <p className="text-[11px] font-bold text-signal-amber uppercase tracking-wide">New Task — {selectedDayData.dateLabel}</p>
+                <input
+                  autoFocus
+                  className="input-base w-full text-sm"
+                  placeholder="Task title…"
+                  value={quickTaskTitle}
+                  onChange={e => setQuickTaskTitle(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && quickTaskTitle.trim()) {
+                      addTask({ title: quickTaskTitle.trim(), description: '', notes: '', priority: quickTaskPriority, status: 'open', dueDate: quickTaskDate, source: 'manual' });
+                      setQuickTaskDate(null);
+                      setQuickTaskTitle('');
+                    }
+                    if (e.key === 'Escape') setQuickTaskDate(null);
+                  }}
+                />
+                <div className="flex items-center gap-2">
+                  <select
+                    className="input-base text-xs py-1 flex-1"
+                    value={quickTaskPriority}
+                    onChange={e => setQuickTaskPriority(e.target.value as typeof quickTaskPriority)}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                  <button
+                    onClick={() => {
+                      if (quickTaskTitle.trim()) {
+                        addTask({ title: quickTaskTitle.trim(), description: '', notes: '', priority: quickTaskPriority, status: 'open', dueDate: quickTaskDate!, source: 'manual' });
+                        setQuickTaskDate(null);
+                        setQuickTaskTitle('');
+                      }
+                    }}
+                    disabled={!quickTaskTitle.trim()}
+                    className="btn-primary text-xs py-1 px-3 disabled:opacity-40"
+                  >Add</button>
+                  <button onClick={() => setQuickTaskDate(null)} className="btn-ghost text-xs py-1 px-2">Cancel</button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Calendar events */}
               <div className="space-y-2">
@@ -775,9 +841,6 @@ export default function Dashboard() {
                     </div>
                   ))
                 }
-                {selectedDayData.visitItems.length === 0 && storesInRed.length > 0 && !selectedDayData.isPast && (
-                  <button onClick={() => openPlanVisit()} className="btn-secondary text-xs !py-1.5 mt-1 w-full justify-center"><Plus size={11} /> Plan Visit</button>
-                )}
               </div>
             </div>
           </div>
