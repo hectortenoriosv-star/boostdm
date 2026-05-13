@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users, Plus, Search, TrendingUp, AlertTriangle,
@@ -927,7 +927,7 @@ export default function Reps() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((rs, i) => {
+              {rows.map((rs, _i) => {
                 const status = getRepStatus(rs);
                 const cfg    = STATUS_CFG[status];
                 const rank   = sorted.indexOf(rs) + 1;
