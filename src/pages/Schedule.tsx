@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Clock, Plus, X, ChevronLeft, ChevronRight, Users, Eye,
+  Clock, Plus, X, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { fmt12h } from '../data/calculations';
@@ -937,7 +937,7 @@ export default function Schedule() {
                               </span>
                             </td>
                             <td className="text-center px-3 py-2.5"><SBadge status={status} mini /></td>
-                            {WEEK_DATES.map((date, di) => {
+                            {WEEK_DATES.map((date, _di) => {
                               const dayCounting = r.shifts.filter(s =>
                                 s.date === date && s.status !== 'off' && (s.status !== 'event' || (s.hours ?? 0) > 0),
                               );
