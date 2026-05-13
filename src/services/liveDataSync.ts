@@ -34,6 +34,7 @@ export const HECTOR_STORES: Store[] = [
 // Address → store id lookup
 const STORE_ADDR_MAP: Record<string, string> = {
   '8650 s braeswood blvd': 'hs1',
+  '9904 s gessner rd': 'hs1', // legacy alias → Fiesta
   '3802 s gessner rd ste 600': 'hs2',
   '6837 s gessner rd': 'hs3',
   '6120 gulfton st': 'hs4',
@@ -155,7 +156,19 @@ export async function syncMonthlyRepPerf(reps: Rep[]): Promise<MonthlyRepPerform
   let idCounter = 1;
 
   const repMap: Record<string, string> = {};
-  for (const r of reps) repMap[r.name.toLowerCase()] = r.id;
+  for (const r of reps) {
+    // Index by "First Last" (normalized)
+    repMap[r.name.toLowerCase()] = r.id;
+    // Also index by "Last, First" (raw sheet format)
+    const parts = r.name.split(' ');
+    if (parts.length >= 2) {
+      const last = parts[parts.length - 1];
+      const first = parts.slice(0, -1).join(' ');
+      repMap[`${last}, ${first}`.toLowerCase()] = r.id;
+      // Also just last name as fallback
+      repMap[last.toLowerCase()] = r.id;
+    }
+  }
 
   for (const row of rows) {
     const dm = (row[0] ?? '').trim();
