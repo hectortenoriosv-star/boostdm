@@ -259,13 +259,25 @@ export async function syncDailyPerf(reps: Rep[]): Promise<DailyPerformance[]> {
     const storeRaw = (row[2] ?? '').trim();
     if (!dateRaw || !repRaw || repRaw.toUpperCase() === 'TOTAL') continue;
 
-    // parse date — supports M/D/YYYY and YYYY-MM-DD
+    // parse date — supports M/D/YYYY, YYYY-MM-DD, "Fri, May 1", "May 1", "May 1, 2026"
     let date = '';
     const slashMatch = dateRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
     if (slashMatch) {
       date = `${slashMatch[3]}-${slashMatch[1].padStart(2,'0')}-${slashMatch[2].padStart(2,'0')}`;
     } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
       date = dateRaw;
+    } else {
+      // Handle "Fri, May 1" / "May 1" / "May 1, 2026" formats
+      const MONTHS: Record<string,string> = { jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12' };
+      const stripped = dateRaw.replace(/^[A-Za-z]{2,3},?\s+/, ''); // remove "Fri, "
+      const namedMatch = stripped.match(/^([A-Za-z]{3,9})\s+(\d{1,2})(?:[,\s]+(\d{4}))?/);
+      if (namedMatch) {
+        const mon = MONTHS[namedMatch[1].toLowerCase().slice(0,3)];
+        const yr = namedMatch[3] ?? String(new Date().getFullYear());
+        if (mon) date = `${yr}-${mon}-${namedMatch[2].padStart(2,'0')}`;
+      }
+      if (!date) continue;
+    }
     } else {
       continue;
     }
