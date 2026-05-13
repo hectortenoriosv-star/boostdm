@@ -210,6 +210,8 @@ interface DataContextValue {
   clearDemoSeedCoachingNotes: () => void;
 
   // Google Calendar & Tasks sync results
+  calendarEvents: CalendarEvent[];
+  googleTasks: GoogleTask[];
   setCalendarEvents: (events: CalendarEvent[]) => void;
   setGoogleTasks: (tasks: GoogleTask[]) => void;
 

@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import {
-  FileText, Plus, ChevronLeft, ChevronRight, AlertTriangle,
+  FileText, Plus, AlertTriangle,
   CheckCircle, BookOpen, Star, X, Clock, Filter,
-  RefreshCw, ArrowRight,
+  ArrowRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useData } from '../context/DataContext';
@@ -295,7 +295,7 @@ export default function EODReports() {
   };
 
   const handleCoachingCreated = (report: EODReport, note: Omit<CoachingNote, 'id' | 'createdAt'>) => {
-    const noteId = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+//     const noteId = Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
     addCoachingNote({ ...note });
     // We get the note ID from DataContext's genId but can't access it directly.
     // Instead we mark the report as actioned; the Coaching Hub will show the link via eodReportId.

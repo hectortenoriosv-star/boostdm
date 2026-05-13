@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users, Plus, Search, TrendingUp, AlertTriangle,
@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 import { fmtPct, fmtCurrency, daysSince } from '../data/calculations';
-import type { Rep, RepSummary, Visit } from '../types';
+import type { Rep, RepSummary } from '../types';
 
 // ─── Status System ────────────────────────────────────────────────────────────
 
@@ -55,28 +55,6 @@ function getGreatFocus(rs: RepSummary): string {
   if (rs.bpPct === 0)    return 'Advise (BP Pitch)';
   if (rs.atuPct === 0)   return 'Transact (ATU Close)';
   return 'Advise + Transact';
-}
-
-function localToday(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function localWeekStart(): string {
-  const d = new Date();
-  const day = d.getDay();
-  const mon = new Date(d);
-  mon.setDate(d.getDate() - ((day + 6) % 7));
-  return `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
-}
-
-type RepVisitStatus = 'today' | 'this_week' | 'not_visited';
-
-function getRepVisitStatus(repId: string, visits: Visit[], today: string, weekStart: string): RepVisitStatus {
-  const repVisits = visits.filter(v => v.status === 'completed' && v.repsObserved?.includes(repId));
-  if (repVisits.some(v => v.date === today)) return 'today';
-  if (repVisits.some(v => v.date >= weekStart && v.date <= today)) return 'this_week';
-  return 'not_visited';
 }
 
 function getAction(rs: RepSummary): string {
@@ -608,7 +586,7 @@ type ModalState =
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Reps() {
-  const { repSummaries, stores, reps, visits, addRep, updateRep, mergeReps, permanentDeleteRep, addToCoachingQueue } = useData();
+  const { repSummaries, stores, reps, addRep, updateRep, mergeReps, permanentDeleteRep, addToCoachingQueue } = useData();
 
   const [search, setSearch]             = useState('');
   const [quickFilter, setQuickFilter]   = useState<QuickFilter>('all');
@@ -620,8 +598,6 @@ export default function Reps() {
   const [modal, setModal]               = useState<ModalState>(null);
 
   const storeMap   = useMemo(() => Object.fromEntries(stores.map(s => [s.id, s.name])), [stores]);
-  const TODAY      = useMemo(() => localToday(), []);
-  const WEEK_START = useMemo(() => localWeekStart(), []);
   const archivedReps = reps.filter(r => !r.active);
 
   // ── Classified statuses ────────────────────────────────────────────────────
@@ -827,155 +803,7 @@ export default function Reps() {
         </div>
       </div>
 
-      {/* ── 4. Rep Leaderboard ─────────────────────────────────────────────── */}
-      <div className="card p-5 space-y-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <p className="text-sm font-bold text-ink-primary">Rep Leaderboard</p>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-muted" />
-              <input
-                className="input-base pl-8 py-1.5 text-xs w-48"
-                placeholder="Search reps or stores…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-            <span className="text-xs text-ink-muted whitespace-nowrap">{rows.length} showing</span>
-          </div>
-        </div>
-
-        {/* Filter chips */}
-        <div className="flex gap-1.5 flex-wrap">
-          {chips.map(c => (
-            <button key={c.key} onClick={() => setQuickFilter(c.key)}
-              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                quickFilter === c.key ? 'bg-accent-orange text-white' : 'bg-navy-600 text-ink-muted hover:text-ink-secondary'
-              }`}>
-              {c.label}
-              {c.count !== undefined && c.count > 0 && (
-                <span className={`text-[10px] rounded-full px-1.5 ${quickFilter === c.key ? 'bg-white/20' : 'bg-navy-500'}`}>{c.count}</span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="border-b border-navy-500">
-                <th className={thL}>#</th>
-                <th className={thL} onClick={() => sortBy('name')}><span className="flex items-center gap-1">Rep <SortIcon active={sortCol === 'name'} dir={sortDir} /></span></th>
-                <th className={thR} onClick={() => sortBy('mtdBoxes')}><span className="flex items-center justify-end gap-1">Boxes <SortIcon active={sortCol === 'mtdBoxes'} dir={sortDir} /></span></th>
-                <th className={thR} onClick={() => sortBy('mtdAtt')}><span className="flex items-center justify-end gap-1">ATT MTD <SortIcon active={sortCol === 'mtdAtt'} dir={sortDir} /></span></th>
-                <th className={thR}>Goals</th>
-                <th className={thR} onClick={() => sortBy('attPct')}><span className="flex items-center justify-end gap-1">% to Goal <SortIcon active={sortCol === 'attPct'} dir={sortDir} /></span></th>
-                <th className={thL} onClick={() => sortBy('status')}><span className="flex items-center gap-1">Status <SortIcon active={sortCol === 'status'} dir={sortDir} /></span></th>
-                <th className={thR} onClick={() => sortBy('bpPct')}><span className="flex items-center justify-end gap-1">BP% <SortIcon active={sortCol === 'bpPct'} dir={sortDir} /></span></th>
-                <th className={thR} onClick={() => sortBy('commission')}><span className="flex items-center justify-end gap-1">Commission <SortIcon active={sortCol === 'commission'} dir={sortDir} /></span></th>
-                <th className={thL}>Status</th>
-                <th className={thL}>Visit Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((rs, i) => {
-                const status = getRepStatus(rs);
-                const cfg    = STATUS_CFG[status];
-                const rank   = sorted.indexOf(rs) + 1;
-                const hasGoal = rs.attachmentGoal > 0;
-                const hasBP   = rs.bpPct > 0 || status !== 'noData';
-                const commTier = rs.commission?.tier;
-                const commRcLabel = rs.commission?.rcLabel;
-                const visitStatus = getRepVisitStatus(rs.rep.id, visits, TODAY, WEEK_START);
-                return (
-                  <tr key={rs.rep.id} className="border-b border-navy-600/60 hover:bg-navy-600/30 transition-colors">
-                    <td className="px-3 py-3 text-ink-muted font-semibold text-[11px]">{rank}</td>
-                    <td className="px-3 py-3">
-                      <Link to={`/reps/${rs.rep.id}`} className="font-semibold text-ink-primary hover:text-white transition-colors">
-                        {rs.rep.name}
-                      </Link>
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      {status === 'noData'
-                        ? <span className="text-ink-muted">—</span>
-                        : <span className={`font-semibold ${rs.mtdBoxes === 0 ? 'text-signal-red' : 'text-ink-primary'}`}>{rs.mtdBoxes}</span>
-                      }
-                    </td>
-                    <td className="px-3 py-3 text-right text-ink-secondary">
-                      {status === 'noData' ? <span className="text-ink-muted">—</span> : fmtCurrency(rs.mtdAttachments)}
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      {hasGoal
-                        ? <span className="text-ink-secondary text-[11px]">{fmtCurrency(rs.attachmentGoal)}</span>
-                        : <span className="text-ink-muted text-[10px]">Not synced</span>
-                      }
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      {status === 'noData'
-                        ? <span className="text-ink-muted text-[11px]">No data</span>
-                        : hasGoal
-                          ? <span className={`font-bold ${cfg.valueCls}`}>{fmtPct(rs.attachmentPctToGoal)}</span>
-                          : <span className="text-ink-muted text-[10px]">Not synced</span>
-                      }
-                    </td>
-                    <td className="px-3 py-3"><RepStatusBadge status={status} /></td>
-                    <td className="px-3 py-3 text-right">
-                      {status === 'noData'
-                        ? <span className="text-ink-muted text-[10px]">Not synced</span>
-                        : hasBP
-                          ? <span className={`font-semibold ${rs.bpPct === 0 ? 'text-signal-red' : rs.bpPct >= 75 ? 'text-signal-green' : 'text-signal-amber'}`}>{rs.bpPct}%</span>
-                          : <span className="text-ink-muted text-[10px]">Not synced</span>
-                      }
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      {rs.commission
-                        ? <span className="font-semibold text-signal-green">{fmtCurrency(rs.commission.commissionAfterRC)}</span>
-                        : <span className="text-ink-muted text-[10px]">Not synced</span>
-                      }
-                    </td>
-                    <td className="px-3 py-3">
-                      {rs.commission && (commTier || commRcLabel)
-                        ? <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
-                            commRcLabel?.includes('Bonus') ? 'bg-signal-green/15 text-signal-green' :
-                            commRcLabel?.includes('Penalty') ? 'bg-signal-red/15 text-signal-red' :
-                            'bg-navy-600 text-ink-secondary'
-                          }`}>{commTier ?? commRcLabel ?? '—'}</span>
-                        : <span className="text-ink-muted text-[10px]">Not synced</span>
-                      }
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-1.5">
-                        {visitStatus === 'today' ? (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-signal-green/15 text-signal-green whitespace-nowrap">Visited Today</span>
-                        ) : visitStatus === 'this_week' ? (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-signal-amber/15 text-signal-amber whitespace-nowrap">This Week</span>
-                        ) : (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-navy-600 text-ink-muted whitespace-nowrap">Not Visited</span>
-                        )}
-                        <RepActionMenu rep={rs.rep} isArchived={false}
-                          onEdit={() => setModal({ type: 'edit', rep: rs.rep })}
-                          onArchive={() => setModal({ type: 'archive', rep: rs.rep })}
-                          onRestore={() => handleRestore(rs.rep)}
-                          onDelete={() => handleDelete(rs.rep)}
-                          onMerge={() => setModal({ type: 'merge', rep: rs.rep })}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {rows.length === 0 && (
-                <tr>
-                  <td colSpan={11} className="px-3 py-10 text-center text-xs text-ink-muted">No reps match this filter</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* ── 5. Priority Coaching Queue + Recognition ───────────────────────── */}
+      {/* ── 4. Priority Coaching Queue + Recognition ───────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
         {/* Coaching Queue */}
@@ -1044,6 +872,162 @@ export default function Reps() {
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── 5. Rep Leaderboard ─────────────────────────────────────────────── */}
+      <div className="card p-5 space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <p className="text-sm font-bold text-ink-primary">Rep Leaderboard</p>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-muted" />
+              <input
+                className="input-base pl-8 py-1.5 text-xs w-48"
+                placeholder="Search reps or stores…"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <span className="text-xs text-ink-muted whitespace-nowrap">{rows.length} showing</span>
+          </div>
+        </div>
+
+        {/* Filter chips */}
+        <div className="flex gap-1.5 flex-wrap">
+          {chips.map(c => (
+            <button key={c.key} onClick={() => setQuickFilter(c.key)}
+              className={`flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                quickFilter === c.key ? 'bg-accent-orange text-white' : 'bg-navy-600 text-ink-muted hover:text-ink-secondary'
+              }`}>
+              {c.label}
+              {c.count !== undefined && c.count > 0 && (
+                <span className={`text-[10px] rounded-full px-1.5 ${quickFilter === c.key ? 'bg-white/20' : 'bg-navy-500'}`}>{c.count}</span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-navy-500">
+                <th className={thL}>#</th>
+                <th className={thL} onClick={() => sortBy('name')}><span className="flex items-center gap-1">Rep <SortIcon active={sortCol === 'name'} dir={sortDir} /></span></th>
+                <th className={thR} onClick={() => sortBy('mtdBoxes')}><span className="flex items-center justify-end gap-1">Boxes <SortIcon active={sortCol === 'mtdBoxes'} dir={sortDir} /></span></th>
+                <th className={thR} onClick={() => sortBy('mtdAtt')}><span className="flex items-center justify-end gap-1">ATT MTD <SortIcon active={sortCol === 'mtdAtt'} dir={sortDir} /></span></th>
+                <th className={thR}>Goals</th>
+                <th className={thR} onClick={() => sortBy('attPct')}><span className="flex items-center justify-end gap-1">% to Goal <SortIcon active={sortCol === 'attPct'} dir={sortDir} /></span></th>
+                <th className={thL} onClick={() => sortBy('status')}><span className="flex items-center gap-1">Status <SortIcon active={sortCol === 'status'} dir={sortDir} /></span></th>
+                <th className={thR} onClick={() => sortBy('bpPct')}><span className="flex items-center justify-end gap-1">BP% <SortIcon active={sortCol === 'bpPct'} dir={sortDir} /></span></th>
+                <th className={thR} onClick={() => sortBy('commission')}><span className="flex items-center justify-end gap-1">Commission <SortIcon active={sortCol === 'commission'} dir={sortDir} /></span></th>
+                <th className={thL}>Status</th>
+                <th className={thL}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((rs, _i) => {
+                const status = getRepStatus(rs);
+                const cfg    = STATUS_CFG[status];
+                const rank   = sorted.indexOf(rs) + 1;
+                const action = getAction(rs);
+                const hasGoal = rs.attachmentGoal > 0;
+                const hasBP   = rs.bpPct > 0 || status !== 'noData';
+                const commTier = rs.commission?.tier;
+                const commRcLabel = rs.commission?.rcLabel;
+                return (
+                  <tr key={rs.rep.id} className="border-b border-navy-600/60 hover:bg-navy-600/30 transition-colors">
+                    <td className="px-3 py-3 text-ink-muted font-semibold text-[11px]">{rank}</td>
+                    <td className="px-3 py-3">
+                      <Link to={`/reps/${rs.rep.id}`} className="font-semibold text-ink-primary hover:text-white transition-colors">
+                        {rs.rep.name}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      {status === 'noData'
+                        ? <span className="text-ink-muted">—</span>
+                        : <span className={`font-semibold ${rs.mtdBoxes === 0 ? 'text-signal-red' : 'text-ink-primary'}`}>{rs.mtdBoxes}</span>
+                      }
+                    </td>
+                    <td className="px-3 py-3 text-right text-ink-secondary">
+                      {status === 'noData' ? <span className="text-ink-muted">—</span> : fmtCurrency(rs.mtdAttachments)}
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      {hasGoal
+                        ? <span className="text-ink-secondary text-[11px]">{fmtCurrency(rs.attachmentGoal)}</span>
+                        : <span className="text-ink-muted text-[10px]">Not synced</span>
+                      }
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      {status === 'noData'
+                        ? <span className="text-ink-muted text-[11px]">No data</span>
+                        : hasGoal
+                          ? <span className={`font-bold ${cfg.valueCls}`}>{fmtPct(rs.attachmentPctToGoal)}</span>
+                          : <span className="text-ink-muted text-[10px]">Not synced</span>
+                      }
+                    </td>
+                    <td className="px-3 py-3"><RepStatusBadge status={status} /></td>
+                    <td className="px-3 py-3 text-right">
+                      {status === 'noData'
+                        ? <span className="text-ink-muted text-[10px]">Not synced</span>
+                        : hasBP
+                          ? <span className={`font-semibold ${rs.bpPct === 0 ? 'text-signal-red' : rs.bpPct >= 75 ? 'text-signal-green' : 'text-signal-amber'}`}>{rs.bpPct}%</span>
+                          : <span className="text-ink-muted text-[10px]">Not synced</span>
+                      }
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      {rs.commission
+                        ? <span className="font-semibold text-signal-green">{fmtCurrency(rs.commission.commissionAfterRC)}</span>
+                        : <span className="text-ink-muted text-[10px]">Not synced</span>
+                      }
+                    </td>
+                    <td className="px-3 py-3">
+                      {rs.commission && (commTier || commRcLabel)
+                        ? <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                            commRcLabel?.includes('Bonus') ? 'bg-signal-green/15 text-signal-green' :
+                            commRcLabel?.includes('Penalty') ? 'bg-signal-red/15 text-signal-red' :
+                            'bg-navy-600 text-ink-secondary'
+                          }`}>{commTier ?? commRcLabel ?? '—'}</span>
+                        : <span className="text-ink-muted text-[10px]">Not synced</span>
+                      }
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-1.5">
+                        {(status === 'needsCoaching' || status === 'red' || status === 'watch') ? (
+                          <button
+                            onClick={() => handleCoachRep(rs)}
+                            className="text-[11px] px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition-all bg-accent-orange/15 text-accent-orange hover:bg-accent-orange/25"
+                          >{action}</button>
+                        ) : (
+                          <Link
+                            to={status === 'noData' ? '/eod-reports' : `/reps/${rs.rep.id}`}
+                            className={`text-[11px] px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition-all ${
+                              status === 'winning' ? 'bg-signal-green/15 text-signal-green hover:bg-signal-green/25'
+                              : status === 'noData' ? 'bg-navy-600 text-ink-muted hover:bg-navy-500'
+                              : 'bg-accent-orange/15 text-accent-orange hover:bg-accent-orange/25'
+                            }`}
+                          >{action}</Link>
+                        )}
+                        <RepActionMenu rep={rs.rep} isArchived={false}
+                          onEdit={() => setModal({ type: 'edit', rep: rs.rep })}
+                          onArchive={() => setModal({ type: 'archive', rep: rs.rep })}
+                          onRestore={() => handleRestore(rs.rep)}
+                          onDelete={() => handleDelete(rs.rep)}
+                          onMerge={() => setModal({ type: 'merge', rep: rs.rep })}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={11} className="px-3 py-10 text-center text-xs text-ink-muted">No reps match this filter</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
