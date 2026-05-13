@@ -8,6 +8,7 @@ import {
   MoreHorizontal, X, ChevronDown, FileText,
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
+import type { CalendarEvent } from '../types';
 import {
   fmtCurrency, fmtPct, calcDailyMovement, isOverdue,
 } from '../data/calculations';
@@ -867,7 +868,7 @@ export default function Dashboard() {
             {upcomingCalEvents.length > 0 && (
               <div className="space-y-1.5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-accent-blue-light">Upcoming Events</p>
-                {upcomingCalEvents.map(e => (
+                {upcomingCalEvents.map((e: CalendarEvent) => (
                   <div key={e.id} className="flex items-start gap-2 py-1">
                     <Calendar size={10} className="text-accent-blue-light flex-shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
