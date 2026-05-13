@@ -12,11 +12,10 @@ import {
   SEED_COACHING_NOTES, SEED_EOD_REPORTS, SEED_MESSAGE_DRAFTS, SEED_DISTRICT_SETTINGS,
 } from '../data/seed';
 import {
-import { runLiveSync } from '../services/liveDataSync';
-
   buildRepSummary, buildStoreSummary, calcDistrictMTD, calcVisitStats,
   CURRENT_MONTH, CURRENT_YEAR,
 } from '../data/calculations';
+import { runLiveSync } from '../services/liveDataSync';
 
 // ─── State Shape ──────────────────────────────────────────────────────────────
 
